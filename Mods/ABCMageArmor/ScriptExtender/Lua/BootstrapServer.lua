@@ -51,22 +51,23 @@ end
 
 ---Test if the given character knows a Mage Armor spell
 ---@param character CHARACTER character to check
----@return boolean knowsMageArmor true if they know mage armor
+---@return string? knowsMageArmor the mage armor spell the character knows
 local function knowsMageArmor(character)
     for _, mageArmorSpellId in ipairs(MAGE_ARMOR_SPELLS) do
-        if Osi.HasSpell(character, mageArmorSpellId) then
-            return true
+        if Osi.HasSpell(character, mageArmorSpellId) == 1 then
+            return mageArmorSpellId
         end
     end
-    return false
+    return nil
 end
 
 ---Release the mage armor casting mutex for the given character if the spellId
 ---is a mage armor spell
----@param spellId string spell ID
 ---@param character CHARACTER character ID
-local function releaseCastingMutex(spellId, character)
+---@param spellId string spell ID
+local function releaseCastingMutex(character, spellId)
     if isSpellMageArmor(spellId) then
+        print("Releasing mutex for " .. character)
         casting_mutexes[character] = nil
     end
 end
@@ -76,16 +77,17 @@ end
 local function castMageArmorIfAble(character)
     local noMutexHeld = casting_mutexes[character] == nil
     local inCombat = Osi.IsInCombat(character) == 1
+    local knownMageArmorSpell = knowsMageArmor(character)
 
     if (noMutexHeld and
-        (not inCombat) and
-        knowsMageArmor(character) and
+        not inCombat and
+        knownMageArmorSpell ~= nil and
         canUseAction(character) and
-        (not alreadyHasMageArmor(character))
+        not alreadyHasMageArmor(character)
     ) then
-        print("Character " .. character .. "is casting " .. MAGE_ARMOR)
+        print("Character " .. character .. "is casting " .. knownMageArmorSpell)
         casting_mutexes[character] = true
-        Osi.UseSpell(character, MAGE_ARMOR, character, character)
+        Osi.UseSpell(character, knownMageArmorSpell, character)
     end
 end
 
@@ -107,5 +109,5 @@ end)
 Ext.Osiris.RegisterListener("Equipped", 2, "after", function(item, character) castMageArmorIfAble(character) end)
 Ext.Osiris.RegisterListener("Unequipped", 2, "after", function(item, character) castMageArmorIfAble(character) end)
 
-Ext.Osiris.RegisterListener("CastedSpell", 5, "after", function(spell, spellElement, storyActionID, caster, spellType) releaseCastingMutex(spell, caster) end)
-Ext.Osiris.RegisterListener("CastSpellFailed", 5, "after", function(spell, spellElement, storyActionID, caster, spellType) releaseCastingMutex(spell, caster) end)
+Ext.Osiris.RegisterListener("CastedSpell", 5, "after", releaseCastingMutex)
+Ext.Osiris.RegisterListener("CastSpellFailed", 5, "after", releaseCastingMutex)
