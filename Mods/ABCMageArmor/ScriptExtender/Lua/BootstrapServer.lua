@@ -1,3 +1,8 @@
+local MAGE_ARMOR_SPELLS = {
+    "Target_MageArmor",
+    "Shout_MageArmor_ArmorOfShadows",
+}
+
 -- a mutex will be created for a character if ABC is already making them cast any Mage Armor spell
 -- it will be removed when the cast completes or fails
 local casting_mutexes = {}
@@ -31,11 +36,6 @@ local function alreadyHasMageArmor(character)
 
     return false
 end
-
-local MAGE_ARMOR_SPELLS = {
-    "Target_MageArmor",
-    "Shout_MageArmor_ArmorOfShadows",
-}
 
 ---Test if the given spell is a Mage Armor spell
 ---@param spellId string spell ID to check
