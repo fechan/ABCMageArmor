@@ -39,7 +39,7 @@ jobs:
           extract: true
   
       - name: Build Pak
-        run: ./bg3-modders-unitool.exe "."
+        run: ./bg3-modders-unitool.exe "./" "./"
 
       - name: Upload Mod
         uses: actions/upload-artifact@v3
@@ -49,7 +49,7 @@ jobs:
 
       - name: Build Zip
         if: startsWith(github.ref, 'refs/tags/')
-        run: ./bg3-modders-unitool.exe -z "."
+        run: ./bg3-modders-unitool.exe -z "./" "./"
 
       - name: Release
         uses: softprops/action-gh-release@v1
