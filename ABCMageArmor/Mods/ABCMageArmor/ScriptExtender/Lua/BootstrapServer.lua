@@ -57,7 +57,6 @@ local function castMageArmorIfAble(character)
         not alreadyHasMageArmor(character)
     ) then
         print("Character " .. character .. "is casting " .. knownMageArmorSpell)
-        casting_mutexes[character] = true
         Osi.UseSpell(character, knownMageArmorSpell, character)
     end
 end
